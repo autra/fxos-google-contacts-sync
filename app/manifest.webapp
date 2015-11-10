@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "name": "test",
-  "description": "A template with the bare minimum structure",
+  "name": "Fxos Gmail Sync",
+  "description": "An app to sync your gmail contact to your fxos phone",
   "launch_path": "/index.html",
   "icons": {
     "16": "/img/icons/icon16x16.png",
@@ -10,20 +10,14 @@
     "128": "/img/icons/icon128x128.png"
   },
   "developer": {
-    "name": "Your name",
-    "url": "http://example.com"
+    "name": "Augustin Trancart (Phoxygen)",
+    "url": "http://www.phoxygen.com"
   },
   "type": "privileged",
-  "permissions": {},
-  "installs_allowed_from": [
-    "*"
-  ],
-  "locales": {
-    "es": {
-      "name": "Aplicación vacía privilegiada",
-      "description": "Una plantilla con la mínima estructura",
-      "permissions": {}
-    }
-  },
-  "default_locale": "en"
+  "permissions": {
+    "contacts":{ "access": "readwrite" },
+    "desktop-notification":{},
+    "alarms": {},
+    "systemXHR": {}
+  }
 }
