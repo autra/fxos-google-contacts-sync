@@ -6,63 +6,47 @@ window.addEventListener('DOMContentLoaded', function() {
 
   'use strict';
 
-      // Enter a client ID for a web application from the Google Developer Console.
-      // The provided clientId will only work if the sample is run directly from
-      // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
-      // In your Developer Console project, add a JavaScript origin that corresponds to the domain
-      // where you will be running the script.
-      var clientId = '265634177893-qjhmrt5avfhdpkcdcbcvemrgifemdf0p.apps.googleusercontent.com';
+  // Enter a client ID for a web application from the Google Developer Console.
+  // The provided clientId will only work if the sample is run directly from
+  // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
+  // In your Developer Console project, add a JavaScript origin that corresponds to the domain
+  // where you will be running the script.
+  var clientId = '265634177893-rejd6a9m1d2q1g5a4pu1tive751g4akm.apps.googleusercontent.com';
 
-      // Enter the API key from the Google Develoepr Console - to handle any unauthenticated
-      // requests in the code.
-      // The provided key works for this sample only when run from
-      // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
-      // To use in your own application, replace this API key with your own.
-      var apiKey = 'AIzaSyDwIbLCByl-fhQ6QVYvKBqMsV4h2hueHq4';
+  // Enter the API key from the Google Develoepr Console - to handle any unauthenticated
+  // requests in the code.
+  // The provided key works for this sample only when run from
+  // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
+  // To use in your own application, replace this API key with your own.
+  var apiKey = 'AIzaSyDwIbLCByl-fhQ6QVYvKBqMsV4h2hueHq4';
 
-      // To enter one or more authentication scopes, refer to the documentation for the API.
-      var scopes = 'https://www.google.com/m8/feeds';
+  // To enter one or more authentication scopes, refer to the documentation for the API.
+  var scopes = 'https%3A%2F%2Fwww.google.com%2Fm8%2Ffeeds';
 
-      function checkAuth() {
-        var urlTemplate = `https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=${clientId}`+
-            `&scope=${scopes}`;
-        fetch('urlTemplate').then((response) => console.log(response));
-        //gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
-      }
+  var oauthWindow;
 
+  document.getElementById('authorize-button').onclick = function(e) {
+    var url = `https://accounts.google.com/o/oauth2/auth?scope=${scopes}` +
+      `&redirect_uri=https%3A%2F%2Fphoxygen.eu%2Foauth_result&response_type=code` +
+      `&client_id=${clientId}&approval_prompt=force`;
+    oauthWindow = window.open(url, '', 'dialog');
+  };
 
-      function handleAuthResult(authResult) {
-        var authorizeButton = document.getElementById('authorize-button');
-        if (authResult && !authResult.error) {
-          authorizeButton.style.visibility = 'hidden';
-          console.log('makeApiCall');
-        } else {
-          authorizeButton.style.visibility = '';
-          authorizeButton.onclick = handleAuthClick;
-        }
-      }
+  function tokenDataReady(e) {
+    var parameters = e.data;
+    if (e.origin !== location.origin) {
+      return;
+    }
+    if (!parameters || !parameters.accessToken) {
+      return;
+    }
 
-      function handleAuthClick(event) {
-        gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: false}, handleAuthResult);
-        return false;
-      }
+    oauthWindow.close();
 
-      // Load the API and make an API call.  Display the results on the screen.
-      function makeApiCall() {
-        gapi.client.load('contact', 'v3', function() {
-          var request = gapi.client.plus.people.get({
-            'userId': 'me'
-          });
-          request.execute(function(resp) {
-            var heading = document.createElement('h4');
-            var image = document.createElement('img');
-            image.src = resp.image.url;
-            heading.appendChild(image);
-            heading.appendChild(document.createTextNode(resp.displayName));
+    alert(parameters.accessToken);
 
-            document.getElementById('content').appendChild(heading);
-          });
-        });
-      }
+  }
+
+  window.addEventListener('message', tokenDataReady);
 
 });

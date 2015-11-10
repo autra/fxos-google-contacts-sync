@@ -19,5 +19,10 @@
     "desktop-notification":{},
     "alarms": {},
     "systemXHR": {}
-  }
+  },
+  "redirects": [
+    {"from": "https://phoxygen.eu/oauth_result",
+    "to": "/oauth_result.html"}
+  ]
+
 }
