@@ -23,12 +23,14 @@ window.addEventListener('DOMContentLoaded', function() {
   // To enter one or more authentication scopes, refer to the documentation for the API.
   var scopes = 'https%3A%2F%2Fwww.google.com%2Fm8%2Ffeeds';
 
+  var accessToken;
+
   var oauthWindow;
 
   document.getElementById('authorize-button').onclick = function(e) {
     var url = `https://accounts.google.com/o/oauth2/auth?scope=${scopes}` +
-      `&redirect_uri=https%3A%2F%2Fphoxygen.eu%2Foauth_result&response_type=code` +
-      `&client_id=${clientId}&approval_prompt=force`;
+      `&redirect_uri=https%3A%2F%2Fphoxygen.eu%2Foauth_result&response_type=token` +
+      `&client_id=${clientId}&approval_prompt=force&state=friends`;
     oauthWindow = window.open(url, '', 'dialog');
   };
 
@@ -37,13 +39,17 @@ window.addEventListener('DOMContentLoaded', function() {
     if (e.origin !== location.origin) {
       return;
     }
-    if (!parameters || !parameters.accessToken) {
+    if (!parameters || !parameters.access_token) {
       return;
     }
 
+    accessToken = parameters.access_token;
     oauthWindow.close();
 
-    alert(parameters.accessToken);
+    GmailConnector.listAllContacts(accessToken, {
+      success: (v) => console.log(v),
+      error: (e) => console.error(e)
+    });
 
   }
 

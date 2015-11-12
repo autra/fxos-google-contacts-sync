@@ -19,7 +19,7 @@ var GmailConnector = (function GmailConnector() {
   var GROUPS_END_POINT =
     'https://www.google.com/m8/feeds/groups/default/full/';
   var EXTRA_HEADERS = {
-    'Gdata-Version': '3.0'
+    'GData-Version': '3.0'
   };
   var GD_NAMESPACE = 'http://schemas.google.com/g/2005';
 

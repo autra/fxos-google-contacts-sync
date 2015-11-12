@@ -27,7 +27,6 @@ if (!window.Rest) {
         var outReq = new RestRequest(xhr);
 
         xhr.open('GET', uri, true);
-        xhr.withCredentials = true;
         var responseType = options.responseType || 'json';
         xhr.responseType = responseType;
         var responseProperty = responseType === 'xml' ?

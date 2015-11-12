@@ -10,6 +10,8 @@
         <link rel="stylesheet" href="css/app.css">
 
         <script defer src="js/app.js" defer></script>
+        <script defer src="js/gmail_connector.js" defer></script>
+        <script defer src="js/http_rest.js" defer></script>
 
         <!--loca-->
         <link rel="prefetch" type="application/l10n" href="data/locales.ini" />
@@ -20,6 +22,7 @@
             <h1 data-l10n-id="app_title">FxOs gmail sync 2</h1>
             <!--Add a button for the user to click to initiate auth sequence -->
             <button id="authorize-button">Authorize</button>
+            <button hidden id="import-contacts">Import Contacts</button>
         </section>
     </body>
 </html>
