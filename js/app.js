@@ -47,7 +47,10 @@ window.addEventListener('DOMContentLoaded', function() {
     oauthWindow.close();
 
     GmailConnector.listAllContacts(accessToken, {
-      success: (v) => console.log(v),
+      success: (result) => {
+        var importer = new ContactsImporter(result.data, accessToken, GmailConnector);
+        importer.start();
+      },
       error: (e) => console.error(e)
     });
 
