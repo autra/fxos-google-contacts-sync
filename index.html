@@ -2,12 +2,20 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Privileged app</title>
+        <title>FxOS Google Contacts sync</title>
         <meta name="description" content="An app to sync your gmail contact with
-        your Firefox OS device">
+        your Firefox OS device">
 
         <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" href="css/app.css">
+
+        <link rel="stylesheet" href="bower_components/base/base.css">
+        <link rel="stylesheet" href="bower_components/gaia-theme/gaia-theme.css">
+        <link rel="stylesheet" type="text/css" href="bower_components/gaia-fonts/style.css">
+
+        <!--components-->
+        <script src="bower_components/gaia-component/gaia-component.js"></script>
+        <script src="bower_components/gaia-header/gaia-header.js"></script>
+        <script src="bower_components/gaia-button/gaia-button.js"></script>
 
         <script src="js/misc.js" defer></script>
         <script src="js/gmail_connector.js" defer></script>
@@ -27,12 +35,14 @@
         <link rel="prefetch" type="application/l10n" href="data/locales.ini" />
         <script type="text/javascript" src="js/libs/l10n.js" defer></script>
     </head>
-    <body>
+    <body class="theme-communications">
         <section>
-            <h1 data-l10n-id="app_title">FxOs gmail sync 2</h1>
+            <gaia-header no-font-fit>
+                <h1 data-l10n-id="app_title">FxOS gmail sync</h1>
+            </gaia-header>
             <!--Add a button for the user to click to initiate auth sequence -->
-            <button id="authorize-button">Authorize</button>
-            <button hidden id="import-contacts">Import Contacts</button>
+            <gaia-button id="authorize-button">Authorize</gaia-button>
+            <gaia-button hidden id="import-contacts">Import Contacts</gaia-button>
         </section>
     </body>
 </html>
