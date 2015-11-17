@@ -34,6 +34,14 @@ window.addEventListener('DOMContentLoaded', function() {
     oauthWindow = window.open(url, '', 'dialog');
   };
 
+  var importButton = document.getElementById('import-contacts');
+  importButton.style.display = 'none';
+  importButton.onclick = startImport;
+
+  function showImportButton() {
+    importButton.style.display = '';
+  }
+
   function tokenDataReady(e) {
     var parameters = e.data;
     if (e.origin !== location.origin) {
@@ -44,8 +52,11 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     accessToken = parameters.access_token;
+    showImportButton();
     oauthWindow.close();
+  }
 
+  function startImport() {
     GmailConnector.listAllContacts(accessToken, {
       success: (result) => {
         var importer = new ContactsImporter(result.data, accessToken, GmailConnector);
@@ -57,5 +68,9 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   window.addEventListener('message', tokenDataReady);
+
+  if (accessToken) {
+    showImportButton();
+  }
 
 });
