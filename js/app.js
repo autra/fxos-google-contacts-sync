@@ -6,6 +6,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
   'use strict';
 
+  var ACCESS_TOKEN_KEY = 'access_token';
   // Enter a client ID for a web application from the Google Developer Console.
   // The provided clientId will only work if the sample is run directly from
   // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
@@ -23,11 +24,12 @@ window.addEventListener('DOMContentLoaded', function() {
   // To enter one or more authentication scopes, refer to the documentation for the API.
   var scopes = 'https%3A%2F%2Fwww.google.com%2Fm8%2Ffeeds';
 
-  var accessToken;
+  var accessToken = localStorage.getItem('access_token');
 
   var oauthWindow;
 
-  document.getElementById('authorize-button').onclick = function(e) {
+  var authorizeButton = document.getElementById('authorize-button');
+  authorizeButton.onclick = function(e) {
     var url = `https://accounts.google.com/o/oauth2/auth?scope=${scopes}` +
       `&redirect_uri=https%3A%2F%2Fphoxygen.eu%2Foauth_result&response_type=token` +
       `&client_id=${clientId}&approval_prompt=force&state=friends`;
@@ -38,8 +40,16 @@ window.addEventListener('DOMContentLoaded', function() {
   importButton.style.display = 'none';
   importButton.onclick = startImport;
 
-  function showImportButton() {
+  function enableImport() {
     importButton.style.display = '';
+    authorizeButton.querySelector('div[data-l10n-id]').dataset.l10nId =
+      'reauthorize';
+    navigator.mozL10n.translate(importButton);
+  }
+
+  function saveAccessToken(accessToken) {
+    accessToken = accessToken;
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
   }
 
   function tokenDataReady(e) {
@@ -51,8 +61,8 @@ window.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    accessToken = parameters.access_token;
-    showImportButton();
+    saveAccessToken(parameters.access_token);
+    enableImport();
     oauthWindow.close();
   }
 
@@ -70,7 +80,7 @@ window.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('message', tokenDataReady);
 
   if (accessToken) {
-    showImportButton();
+    enableImport();
   }
 
 });
