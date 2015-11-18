@@ -7,6 +7,7 @@ window.addEventListener('DOMContentLoaded', function() {
   'use strict';
 
   var ACCESS_TOKEN_KEY = 'access_token';
+  var TOKEN_VALIDITY_KEY = 'token_validity';
   // Enter a client ID for a web application from the Google Developer Console.
   // The provided clientId will only work if the sample is run directly from
   // https://google-api-javascript-client.googlecode.com/hg/samples/authSample.html
@@ -24,9 +25,9 @@ window.addEventListener('DOMContentLoaded', function() {
   // To enter one or more authentication scopes, refer to the documentation for the API.
   var scopes = 'https%3A%2F%2Fwww.google.com%2Fm8%2Ffeeds';
 
-  var accessToken = localStorage.getItem('access_token');
-
   var oauthWindow;
+  var accessToken;
+  var tokenValidity;
 
   var authorizeButton = document.getElementById('authorize-button');
   authorizeButton.onclick = function(e) {
@@ -37,19 +38,45 @@ window.addEventListener('DOMContentLoaded', function() {
   };
 
   var importButton = document.getElementById('import-contacts');
-  importButton.style.display = 'none';
   importButton.onclick = startImport;
 
   function enableImport() {
-    importButton.style.display = '';
-    authorizeButton.querySelector('div[data-l10n-id]').dataset.l10nId =
-      'reauthorize';
-    navigator.mozL10n.translate(importButton);
+    var timeEnable;
+    if (!accessToken || !tokenValidity) {
+      timeEnable = -1
+    } else {
+      timeEnable = tokenValidity - Date.now();
+    }
+
+    if (timeEnable > 0) {
+      importButton.style.display = '';
+      authorizeButton.querySelector('div[data-l10n-id]').dataset.l10nId =
+        'reauthorize';
+      navigator.mozL10n.translate(authorizeButton);
+      setTimeout(disableImport, timeEnable);
+    } else {
+      disableImport();
+    }
   }
 
-  function saveAccessToken(accessToken) {
-    accessToken = accessToken;
+  function disableImport() {
+    importButton.style.display = 'none';
+    authorizeButton.querySelector('div[data-l10n-id]').dataset.l10nId =
+      'authorize';
+    navigator.mozL10n.translate(authorizeButton);
+  }
+
+  function loadPersistedState() {
+    accessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    tokenValidity = new Date(localStorage.getItem(TOKEN_VALIDITY_KEY));
+    navigator.mozL10n.ready(enableImport);
+  }
+
+  function saveAccessToken(parameters) {
+    accessToken = parameters.access_token;
     localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    tokenValidity = new Date(Date.now() + parameters.expires_in * 1000);
+    localStorage.setItem(TOKEN_VALIDITY_KEY, tokenValidity);
   }
 
   function tokenDataReady(e) {
@@ -61,7 +88,7 @@ window.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    saveAccessToken(parameters.access_token);
+    saveAccessToken(parameters);
     enableImport();
     oauthWindow.close();
   }
@@ -79,8 +106,6 @@ window.addEventListener('DOMContentLoaded', function() {
 
   window.addEventListener('message', tokenDataReady);
 
-  if (accessToken) {
-    enableImport();
-  }
+  loadPersistedState();
 
 });
