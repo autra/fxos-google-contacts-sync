@@ -109,8 +109,11 @@ var GmailConnector = (function GmailConnector() {
     callbacks) {
     var listingCallbacks = {
       success: function onSuccess(response) {
+        // extract updated
+        var updated = new Date(response.querySelector('updated').textContent);
         callbacks.success({
-          'data': nodeListToArray(response)
+          'data': nodeListToArray(response),
+          'updated': updated
         });
       },
       error: callbacks.error,
@@ -237,6 +240,7 @@ var GmailConnector = (function GmailConnector() {
     // This field will be needed for indexing within the
     // import process, not for the api
     output.uid = getUid(googleContact);
+    output.etag = getEtag(googleContact);
 
     output.name = [getValueForNode(googleContact, 'title')];
 
@@ -309,6 +313,10 @@ var GmailConnector = (function GmailConnector() {
   // for a specific contact node
   var getUid = function getUid(contact) {
     return contact.querySelector('id').textContent;
+  };
+
+  var getEtag = function getEtag(contact) {
+    return contact.getAttribute('gd:etag');
   };
 
   // Returns an array with the possible emails found in a contact
