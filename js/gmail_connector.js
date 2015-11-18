@@ -61,74 +61,46 @@ var GmailConnector = (function GmailConnector() {
     // Copy the access_token
     accessToken = access_token;
     photoUrls = {};
-    getContactsGroup(access_token, callbacks);
+    return getContactsGroup(access_token);
   };
 
-  var getContactsGroup = function getContactsGroup(access_token,
-    callbacks) {
-    var groupCallbacks = {
-      success: function onSuccess(response) {
+  var getContactsGroup = function getContactsGroup(access_token) {
+    return performAPIRequest(GROUPS_END_POINT, access_token)
+      .then((response) => {
         // Locate the entry witch systemGroup id is 'Contacts'
         var feed = response.querySelector('feed');
         if (feed === null) {
-          callbacks.error();
-          return;
+          return Promise.reject('feed is null');
         }
 
         var sgc = feed.querySelector('systemGroup[id="Contacts"]');
         if (sgc !== null) {
-           var id = sgc.parentNode.querySelector('id').textContent;
-           getContactsByGroup(id, access_token, callbacks);
+          var id = sgc.parentNode.querySelector('id').textContent;
+          return getContactsByGroup(id, access_token);
         } else {
-           callbacks.error();
+          Promise.reject('No systemGroup with id "Contacts" found');
         }
-      },
-      error: function(e) {
-        if (e && e.status === 401) {
-          // This is a token expired / invalid token problem
-          window.console.warn('GMail Access token expired or invalid. ',
-                              'restarting flow!');
-          callbacks.success({
-            error: {
-              code: 190
-            }
-          });
-        }
-        else {
-          callbacks.error();
-        }
-      },
-      timeout: callbacks.timeout
-    };
-
-    return performAPIRequest(GROUPS_END_POINT, groupCallbacks, access_token);
+    });
   };
 
   // Retrieve all the contacts for the specific groupId
-  var getContactsByGroup = function getContactsByGroup(groupId, access_token,
-    callbacks) {
-    var listingCallbacks = {
-      success: function onSuccess(response) {
-        // extract updated
-        var updated = new Date(response.querySelector('updated').textContent);
-        callbacks.success({
-          'data': nodeListToArray(response),
-          'updated': updated
-        });
-      },
-      error: callbacks.error,
-      timeout: callbacks.timeout
-    };
+  var getContactsByGroup = function getContactsByGroup(groupId, access_token) {
 
     var groupUrl = END_POINT + '&group=' + groupId;
-    return performAPIRequest(groupUrl, listingCallbacks, access_token);
+    return performAPIRequest(groupUrl, access_token).then((response) => {
+      // extract updated
+      var updated = new Date(response.querySelector('updated').textContent);
+      return {
+        'data': nodeListToArray(response),
+        'updated': updated
+      };
+    });
   };
 
   // Given a Google contacts api url add the authentication and
   // extra headers to perform the correct request
-  var performAPIRequest = function performAPIRequest(url, callbacks,
-    access_token) {
-    return Rest.get(url, callbacks, {
+  var performAPIRequest = function performAPIRequest(url, access_token) {
+    return Rest.get(url, {
       'requestHeaders': buildRequestHeaders(access_token),
       'responseType': 'xml'
     });
@@ -437,11 +409,9 @@ var GmailConnector = (function GmailConnector() {
   };
 
   var downloadContactPicture = function downloadContactPicture(googleContact,
-    access_token, callbacks) {
+    access_token) {
     var url = buildContactPhotoURL(googleContact, access_token);
-    return Rest.get(url, callbacks, {
-      'responseType': 'blob'
-    });
+    return Rest.get(url, { 'responseType': 'blob' });
   };
 
   // Build the url of the photo with the access token

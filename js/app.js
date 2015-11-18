@@ -94,14 +94,12 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   function startImport() {
-    GmailConnector.listAllContacts(accessToken, {
-      success: (result) => {
+    GmailConnector.listAllContacts(accessToken)
+    .then((result) => {
         var importer = new ContactsImporter(result.data, accessToken, GmailConnector);
         importer.start();
-      },
-      error: (e) => console.error(e)
-    });
-
+    })
+    .catch((e) => console.error(e));
   }
 
   window.addEventListener('message', tokenDataReady);

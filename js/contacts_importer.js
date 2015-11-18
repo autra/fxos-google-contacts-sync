@@ -62,6 +62,7 @@
       req.onerror = errorCb;
     }
 
+    // TODO this could be done with promise
     function pictureReady(blobPicture) {
       var serviceContact = this;
 
@@ -168,18 +169,16 @@
     function importContact(index) {
       var serviceContact = contactsHash[self.contacts[index]];
       // We need to get the picture
-      var callbacks = {
-        success: pictureReady.bind(serviceContact),
-        error: pictureError.bind(serviceContact),
-        timeout: pictureTimeout.bind(serviceContact)
-      };
+      var successCallback = pictureReady.bind(serviceContact);
 
       if (isOnLine === true) {
-        serviceConnector.downloadContactPicture(serviceContact,
-                                           access_token, callbacks);
-      }
-      else {
-        callbacks.success(null);
+        return serviceConnector.downloadContactPicture(
+          serviceContact,
+          access_token
+        ).then(successCallback, pictureError.bind(serviceContact));
+      } else {
+        successCallback(null);
+        return Promise.resolve();
       }
     }
 
