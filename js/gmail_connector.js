@@ -25,6 +25,7 @@ var GmailConnector = (function GmailConnector() {
 
   var CATEGORY = 'gmail';
   var URN_IDENTIFIER = 'urn:service:gmail:uid:';
+  var LAST_IMPORT_DATE_KEY = 'last_import_date';
 
   // Will be used as a cache for the thumbnail url for each contact
   var photoUrls = {};
@@ -423,8 +424,28 @@ var GmailConnector = (function GmailConnector() {
     return null;
   };
 
-  var startSync = function startSync() {
-    //We don't sync Google contacts (yet)
+  var startSync = function startSync(accessToken) {
+    var now = new Date();
+    var lastImportDateStr = localStorage.getItem(LAST_IMPORT_DATE_KEY);
+    var lastImportDate = lastImportDateStr ? new Date(lastImportDateStr) : null;
+
+    if (!lastImportDate || isNaN(lastImportDate.getTime())) {
+      // no valid date, import all
+      return this.listAllContacts(accessToken)
+      .then((result) => {
+        var importer = this.getImporter(result.data, accessToken);
+        importer.start();
+
+        // here we consider the import as success
+        localStorage.setItem(LAST_IMPORT_DATE_KEY, now);
+      })
+      // TODO proper error handling.
+      .catch((e) => console.error(e));
+
+    } else {
+      // do something
+      return Promise.resolve();
+    }
   };
 
   var getServiceName = (function getServiceName() {

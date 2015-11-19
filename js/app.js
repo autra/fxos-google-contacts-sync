@@ -94,11 +94,8 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   function startImport() {
-    GmailConnector.listAllContacts(accessToken)
-    .then((result) => {
-        var importer = new ContactsImporter(result.data, accessToken, GmailConnector);
-        importer.start();
-    })
+    GmailConnector.startSync(accessToken)
+    .then(() => console.log('Sync successfully finished!'))
     .catch((e) => console.error(e));
   }
 
