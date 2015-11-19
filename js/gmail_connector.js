@@ -434,8 +434,8 @@ var GmailConnector = (function GmailConnector() {
       return this.listAllContacts(accessToken)
       .then((result) => {
         var importer = this.getImporter(result.data, accessToken);
-        importer.start();
-
+        return importer.start();
+      }).then(() => {
         // here we consider the import as success
         localStorage.setItem(LAST_IMPORT_DATE_KEY, now);
       })

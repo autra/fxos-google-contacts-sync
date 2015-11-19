@@ -18,10 +18,6 @@
     var serviceConnector = pConnector;
     var numImported = 0;
 
-    var mustHold = false;
-    var holded = false;
-    var mustFinish = false;
-
     var isOnLine = navigator.onLine;
 
     // To count the number of merged duplicate contacts
@@ -34,109 +30,45 @@
       isOnLine = navigator.onLine;
     }
 
-    function contactSaved(e) {
-      var cfdata = this;
-      if (typeof self.oncontactimported === 'function') {
-        window.setTimeout(function() {
-          self.oncontactimported(cfdata);
-        }, 0);
-      }
-      continueCb();
-    }
+    function saveMozContact(deviceContact) {
+      return new Promise(function(resolve, reject) {
+        var req = navigator.mozContacts.save(
+          utils.misc.toMozContact(deviceContact));
 
-    function contactSaveError(err) {
-      window.console.error('Error while importing contact: ', err.name);
-
-      if (typeof self.onerror === 'function') {
-        window.setTimeout(self.onerror.bind(null, err), 0);
-      }
-      continueCb();
-    }
-
-    function saveMozContact(deviceContact, successCb, errorCb) {
-      var req = navigator.mozContacts.save(
-        utils.misc.toMozContact(deviceContact));
-
-      req.onsuccess = successCb;
-      req.onerror = errorCb;
+        req.onsuccess = resolve;
+        req.onerror = reject;
+      })
     }
 
     // TODO this could be done with promise
-    function pictureReady(blobPicture) {
-      var serviceContact = this;
-
-      var done = function() {
-        var deviceContact = self.adapt(serviceContact);
-        self.persist(deviceContact, contactSaved.bind(serviceContact),
-                     contactSaveError);
-      };
-
+    function pictureReady(serviceContact, blobPicture) {
       // Photo is assigned to the service contact as it is needed by the
       // Fb Connector
       if (!blobPicture) {
-        done();
-        return;
+        return Promise.resolve(serviceContact);
       }
 
-      utils.thumbnailImage(blobPicture, function gotThumbnail(thumbnail) {
+      return utils.thumbnailImage(blobPicture).then((thumbnail) => {
         if (blobPicture !== thumbnail) {
           serviceContact.photo = [blobPicture, thumbnail];
         } else {
           serviceContact.photo = [blobPicture];
         }
-        done();
+        return serviceContact;
       });
     }
 
-    function pictureError() {
-      window.console.error('Error while getting picture for contact: ',
-                           this.user_id);
-      self.persist(self.adapt(this), contactSaved.bind(this), contactSaveError);
-    }
-
-    function pictureTimeout() {
-      window.console.warn('Timeout while getting picture for contact: ',
-                           this.user_id);
-      self.persist(self.adapt(this), contactSaved.bind(this),
-                   contactSaveError);
-    }
-
     this.start = function() {
-      numMergedDuplicated = 0;
-
-      mustHold = false;
-      holded = false;
-      mustFinish = false;
-      importContacts(numImported);
-    };
-
-    this.hold = function() {
-      mustHold = true;
-    };
-
-    this.finish = function() {
-      mustFinish = true;
-
-      if (holded) {
-        notifySuccess();
+      var allPromises = [];
+      for (var hash of this.contacts) {
+        allPromises.push(importContact(hash));
       }
-    };
-
-    this.resume = function() {
-      mustHold = false;
-      holded = false;
-      mustFinish = false;
-
-      window.setTimeout(function resume_import() {
-        importContacts(numImported);
-      }, 0);
+      return Promise.all(allPromises);
     };
 
     // This method might be overritten
     this.persist = function(contactData, successCb, errorCb) {
-      saveMozContact(contactData, successCb, function onMismatchError(evt) {
-        errorCb(evt.target.error);
-      });
+      return saveMozContact(contactData);
     };
 
     // This method might be overwritten
@@ -144,25 +76,24 @@
       return serviceConnector.adaptDataForSaving(serviceContact);
     };
 
-    function importContacts(from) {
-      for (var i = from; i < from + CHUNK_SIZE && i < total; i++) {
-        importContact(i);
-      }
-    }
-
-    function importContact(index) {
-      var serviceContact = contactsHash[self.contacts[index]];
+    function importContact(hash) {
+      var serviceContact = contactsHash[hash];
       // We need to get the picture
-      var successCallback = pictureReady.bind(serviceContact);
-
       if (isOnLine === true) {
         return serviceConnector.downloadContactPicture(
           serviceContact,
           access_token
-        ).then(successCallback, pictureError.bind(serviceContact));
+        )
+        .then(pictureReady.bind(this, serviceContact))
+        .then(() => {
+          return self.persist(self.adapt(serviceContact));
+        })
+        .catch((e) => {
+          console.log(e);
+          self.persist(self.adapt(serviceContact));
+        });
       } else {
-        successCallback(null);
-        return Promise.resolve();
+        return self.persist(self.adapt(serviceContact));
       }
     }
 
@@ -174,25 +105,5 @@
       }
     }
 
-    function continueCb() {
-      numImported++;
-      var next = numImported + CHUNK_SIZE - 1;
-      if (next < total) {
-        if (!mustHold && !mustFinish) {
-          importContact(next);
-        }
-        else if (mustFinish && !holded) {
-          notifySuccess();
-        }
-
-        if (mustHold) {
-          holded = true;
-        }
-      }
-      else if (numImported >= total) {
-        // End has been reached
-        notifySuccess();
-      }
-    }
   };
 })();

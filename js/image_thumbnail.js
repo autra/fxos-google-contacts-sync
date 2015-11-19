@@ -59,13 +59,10 @@ var utils = window.utils || {};
 
   // We keep the aspect ratio and make the smallest edge be
   // |thumbnailEdge| long.
-  utils.thumbnailImage = function(blob, callback) {
-      getThumbsConfig().then(function(config) {
-        return scaleImage(blob, config);
-      }).then(callback).catch(function(err) {
-        console.error('Error while converting image to thumbnail:', err.name);
-        callback(blob);
-      });
+  utils.thumbnailImage = function(blob) {
+    return getThumbsConfig().then(function(config) {
+      return scaleImage(blob, config);
+    });
   };
 
 })(utils);
