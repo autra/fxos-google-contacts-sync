@@ -16,7 +16,7 @@ var utils = window.utils || {};
 
   var dpr = window.devicePixelRatio || 1;
 
-  var CONFIG_FILE = '/config-images.json';
+  var CONFIG_FILE = '/js/config-images.json';
 
   // Default data for creating a thumbnail. This will be used if a config file
   // is not found
