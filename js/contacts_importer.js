@@ -2,7 +2,6 @@
 /* Shamelessly stolen from gaia */
 /* global contacts */
 /* global utils */
-/* global Matcher */
 
 (function() {
   var CHUNK_SIZE = 5;
@@ -135,24 +134,9 @@
 
     // This method might be overritten
     this.persist = function(contactData, successCb, errorCb) {
-      var cbs = {
-        onmatch: function(matches) {
-          numMergedDuplicated++;
-
-          contacts.adaptAndMerge(this, matches, {
-            success: successCb,
-            error: errorCb
-          });
-        }.bind(utils.misc.toMozContact(contactData)),
-        onmismatch: function() {
-          saveMozContact(this, successCb, function onMismatchError(evt) {
-            errorCb(evt.target.error);
-          });
-        }.bind(contactData)
-      };
-
-      // Try to match and if so merge is performed
-      Matcher.match(contactData, 'passive', cbs);
+      saveMozContact(contactData, successCb, function onMismatchError(evt) {
+        errorCb(evt.target.error);
+      });
     };
 
     // This method might be overwritten
