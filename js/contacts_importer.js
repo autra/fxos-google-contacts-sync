@@ -30,12 +30,20 @@
       isOnLine = navigator.onLine;
     }
 
+    /**
+     * Save a contact in the device DB. Return a promise that resolve to the
+     * contact.
+     *
+     * It's useful because contact.id will then be populated.
+     */
     function saveMozContact(deviceContact) {
       return new Promise(function(resolve, reject) {
-        var req = navigator.mozContacts.save(
-          utils.misc.toMozContact(deviceContact));
+        var contact = utils.misc.toMozContact(deviceContact);
+        var req = navigator.mozContacts.save(contact);
 
-        req.onsuccess = resolve;
+        req.onsuccess = function() {
+          resolve(contact);
+        };
         req.onerror = reject;
       })
     }
@@ -61,6 +69,7 @@
     this.start = function() {
       var allPromises = [];
       for (var hash of this.contacts) {
+        // TODO proper reporting of success
         allPromises.push(importContact(hash));
       }
       return Promise.all(allPromises);
@@ -79,22 +88,33 @@
     function importContact(hash) {
       var serviceContact = contactsHash[hash];
       // We need to get the picture
+      var promise;
       if (isOnLine === true) {
-        return serviceConnector.downloadContactPicture(
+        promise = serviceConnector.downloadContactPicture(
           serviceContact,
           access_token
         )
         .then(pictureReady.bind(this, serviceContact))
-        .then(() => {
-          return self.persist(self.adapt(serviceContact));
-        })
         .catch((e) => {
-          console.log(e);
-          self.persist(self.adapt(serviceContact));
+          // a picture download fail does not block the save
+          console.log('Error while downloading picture for contact',
+                      serviceContact, e);
         });
       } else {
-        return self.persist(self.adapt(serviceContact));
+        // TODO we should not resolve here. We need to be online to import.
+        promise = Promise.resolve();
       }
+      return promise
+      .then(() => self.persist(self.adapt(serviceContact)))
+      .then((contact) => {
+        // save mapping between google id and mozcontact id
+        // using localstorage for now
+        // we naively store both side of the relationship for now.
+        localStorage.setItem('mozcontact#' + contact.id,
+                             contactsHash[hash].uid);
+        localStorage.setItem(contactsHash[hash].uid, contact.id);
+        return contact;
+      });
     }
 
     function notifySuccess() {

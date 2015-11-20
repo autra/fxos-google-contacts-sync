@@ -440,8 +440,10 @@ var GmailConnector = (function GmailConnector() {
         localStorage.setItem(LAST_IMPORT_DATE_KEY, now);
       })
       // TODO proper error handling.
-      .catch((e) => console.error(e));
-
+      .catch(e => {
+        console.error(e)
+        return Promise.reject(e);
+      });
     } else {
       // do something
       return Promise.resolve();

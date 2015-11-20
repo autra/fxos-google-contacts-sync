@@ -93,8 +93,9 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   function startImport() {
+    console.log('starting sync');
     GmailConnector.startSync(accessToken)
-    .then(() => console.log('Sync successfully finished!'))
+    .then((result) => console.log('Sync successfully finished!', result))
     .catch((e) => console.error(e));
   }
 
