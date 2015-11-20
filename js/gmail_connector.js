@@ -67,6 +67,13 @@ var GmailConnector = (function GmailConnector() {
     });
   };
 
+  var listUpdatedContacts = function listUpdatedContacts(accessToken, date) {
+    photoUrls = {};
+    return getContactsGroupId(accessToken).then((id) => {
+      return getContactsByGroup(id, accessToken, date);
+    });
+  };
+
   var getContactsGroupId = function getContactsGroupId(access_token) {
     return performAPIRequest(GROUPS_END_POINT, access_token)
       .then((response) => {
@@ -87,9 +94,17 @@ var GmailConnector = (function GmailConnector() {
   };
 
   // Retrieve all the contacts for the specific groupId
-  var getContactsByGroup = function getContactsByGroup(groupId, access_token) {
+  var getContactsByGroup = function getContactsByGroup(groupId,
+                                                       access_token,
+                                                       updatedMin) {
 
     var groupUrl = END_POINT + '&group=' + groupId;
+    if (updatedMin) {
+      groupUrl += '&updated-min=' + updatedMin.toISOString();
+      // if we ask for a timerange, we want to know about deletion operations as
+      // well.
+      groupUrl += '&showdeleted=true';
+    }
     return performAPIRequest(groupUrl, access_token).then((response) => {
       // extract updated
       var updated = new Date(response.querySelector('updated').textContent);
@@ -216,6 +231,15 @@ var GmailConnector = (function GmailConnector() {
     // import process, not for the api
     output.uid = getUid(googleContact);
     output.etag = getEtag(googleContact);
+
+    var isDeleted =
+      googleContact.getElementsByTagNameNS(GD_NAMESPACE, 'deleted').length > 0;
+
+    if (isDeleted) {
+      output.deleted = true;
+      // early return in this case: we only need to know it has been deleted.
+      return output;
+    }
 
     output.name = [getValueForNode(googleContact, 'title')];
 
@@ -448,7 +472,19 @@ var GmailConnector = (function GmailConnector() {
       });
     } else {
       // do something
-      return Promise.resolve();
+      return this.listUpdatedContacts(accessToken, lastImportDate)
+      .then(result => {
+        var importer = this.getImporter(result.data, accessToken);
+        return importer.startSync();
+      }).then((syncResults) => {
+        localStorage.setItem(LAST_IMPORT_DATE_KEY, now);
+        return syncResults;
+      })
+      // TODO proper error handling
+      .catch(e => {
+        console.error(e)
+        return Promise.reject(e);
+      });
     }
   };
 
@@ -462,6 +498,7 @@ var GmailConnector = (function GmailConnector() {
 
   return {
     'listAllContacts': listAllContacts,
+    'listUpdatedContacts': listUpdatedContacts,
     'listDeviceContacts': listDeviceContacts,
     'getImporter': getImporter,
     'cleanContacts': cleanContacts,

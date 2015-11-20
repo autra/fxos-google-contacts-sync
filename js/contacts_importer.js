@@ -48,6 +48,17 @@
       })
     }
 
+    function deleteMozContact(id) {
+      return new Promise(function(resolve, reject) {
+        var contact = new mozContact();
+        contact.id = id;
+        var req = navigator.mozContacts.remove(contact);
+
+        req.onsuccess = resolve;
+        req.onerror = reject;
+      });
+    }
+
     // TODO this could be done with promise
     function pictureReady(serviceContact, blobPicture) {
       // Photo is assigned to the service contact as it is needed by the
@@ -75,6 +86,14 @@
       return Promise.all(allPromises);
     };
 
+    this.startSync = function(lastImportDate) {
+      var allPromises = [];
+      for (var hash of this.contacts) {
+        allPromises.push(syncContact(hash));
+      }
+      return Promise.all(allPromises);
+    };
+
     // This method might be overritten
     this.persist = function(contactData, successCb, errorCb) {
       return saveMozContact(contactData);
@@ -84,6 +103,36 @@
     this.adapt = function(serviceContact) {
       return serviceConnector.adaptDataForSaving(serviceContact);
     };
+
+    function syncContact(hash) {
+      var serviceContact = contactsHash[hash];
+
+      var mozId = localStorage.getItem(serviceContact.uid);
+      if (serviceContact.deleted) {
+        return deleteMozContact(mozId).then(() => {
+          localStorage.removeItem(serviceContact.uid);
+          localStorage.removeItem('mozcontact#' + mozId);
+          return {
+            action: 'delete',
+            id: mozId
+          };
+        });
+      } else if (!mozId) {
+        return importContact(hash).then((contact) => {
+          return {
+            action: 'new',
+            id: contact.id
+          };
+        });
+      } else {
+        // TODO support update of contacts.
+        return Promise.resolve({
+          action: 'updated',
+          id: mozId
+        });
+      }
+
+    }
 
     function importContact(hash) {
       var serviceContact = contactsHash[hash];
