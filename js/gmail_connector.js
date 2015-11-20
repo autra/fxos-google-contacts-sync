@@ -59,12 +59,15 @@ var GmailConnector = (function GmailConnector() {
   // Gets a list of all contacts giving a valid access token
   var listAllContacts = function listAllContacts(access_token) {
     // Copy the access_token
+    // FIXME why?
     accessToken = access_token;
     photoUrls = {};
-    return getContactsGroup(access_token);
+    return getContactsGroupId(access_token).then((id) => {
+      return getContactsByGroup(id, accessToken);
+    });
   };
 
-  var getContactsGroup = function getContactsGroup(access_token) {
+  var getContactsGroupId = function getContactsGroupId(access_token) {
     return performAPIRequest(GROUPS_END_POINT, access_token)
       .then((response) => {
         // Locate the entry witch systemGroup id is 'Contacts'
@@ -75,8 +78,8 @@ var GmailConnector = (function GmailConnector() {
 
         var sgc = feed.querySelector('systemGroup[id="Contacts"]');
         if (sgc !== null) {
-          var id = sgc.parentNode.querySelector('id').textContent;
-          return getContactsByGroup(id, access_token);
+          // return id
+          return sgc.parentNode.querySelector('id').textContent;
         } else {
           Promise.reject('No systemGroup with id "Contacts" found');
         }
