@@ -90,7 +90,6 @@ window.addEventListener('DOMContentLoaded', function() {
 
     saveAccessToken(parameters);
     enableImport();
-    oauthWindow.close();
   }
 
   function startImport() {
