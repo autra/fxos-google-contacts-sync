@@ -57,8 +57,7 @@ var GmailConnector = (function GmailConnector() {
   };
 
   // Gets a list of all contacts giving a valid access token
-  var listAllContacts = function listAllContacts(access_token,
-    callbacks) {
+  var listAllContacts = function listAllContacts(access_token) {
     // Copy the access_token
     accessToken = access_token;
     photoUrls = {};
