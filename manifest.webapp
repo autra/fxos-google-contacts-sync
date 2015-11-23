@@ -18,7 +18,8 @@
     "contacts":{ "access": "readwrite" },
     "desktop-notification":{},
     "alarms": {},
-    "systemXHR": {}
+    "systemXHR": {},
+    "moz-extremely-unstable-and-will-change-webcomponents": {}
   },
   "redirects": [
     {"from": "https://phoxygen.eu/oauth_result",
