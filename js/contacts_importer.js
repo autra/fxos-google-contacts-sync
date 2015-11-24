@@ -59,6 +59,26 @@
       });
     }
 
+    function getMozContactById(id) {
+      return new Promise(function(resolve, reject) {
+        var req = navigator.mozContacts.find({
+          filterBy: ['id'],
+          filterValue: [id],
+          filterOp: 'equals'
+        });
+
+        req.onsuccess = function() {
+          if (this.result.length === 0) {
+            reject(new Error('no contact found'));
+          } else {
+            resolve(this.result[0]);
+          }
+        };
+
+        req.onerror = reject
+      });
+    }
+
     // TODO this could be done with promise
     function pictureReady(serviceContact, blobPicture) {
       // Photo is assigned to the service contact as it is needed by the
@@ -125,16 +145,24 @@
           };
         });
       } else {
-        // TODO support update of contacts.
-        return Promise.resolve({
-          action: 'updated',
-          id: mozId
+        var mozContactPromise = getMozContactById(mozId);
+        var newContactPromise = createMozContact(hash);
+        return Promise.all([mozContactPromise, newContactPromise])
+        .then(contacts => {
+          var mozContact = contacts[0];
+          var newContact = contacts[1];
+          return new window.contacts.Updater.update(mozContact, newContact);
+        }).then(self.persist)
+        .then((contact) => {
+          return {
+            action: 'updated',
+            id: contact.id
+          };
         });
       }
-
     }
 
-    function importContact(hash) {
+    function createMozContact(hash) {
       var serviceContact = contactsHash[hash];
       // We need to get the picture
       var promise;
@@ -150,11 +178,14 @@
                       serviceContact, e);
         });
       } else {
-        // TODO we should not resolve here. We need to be online to import.
-        promise = Promise.resolve();
+        promise = Promise.resolve(serviceContact);
       }
-      return promise
-      .then(() => self.persist(self.adapt(serviceContact)))
+      return promise.then(() => self.adapt(serviceContact));
+    }
+
+    function importContact(hash) {
+      return createMozContact(hash)
+      .then((contact) => self.persist(contact))
       .then((contact) => {
         // save mapping between google id and mozcontact id
         // using localstorage for now
