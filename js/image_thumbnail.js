@@ -2,12 +2,11 @@
 
 /* global ImageUtils, LazyLoader */
 
-/*
- *   WARNING: This module LazyLoads
+/**
+ * WARNING, this module lazy-loads:
  *
  *   '/shared/js/contacts/import/utilities/config.js',
  *   '/shared/js/image_utils.js'
- *
  */
 
 var utils = window.utils || {};
@@ -16,10 +15,10 @@ var utils = window.utils || {};
 
   var dpr = window.devicePixelRatio || 1;
 
-  var CONFIG_FILE = '/js/config-images.json';
+  var CONFIG_FILE = '/js/config_images.json';
 
   // Default data for creating a thumbnail. This will be used if a config file
-  // is not found
+  // is not found.
   var DEFAULT_CONFIG = {
     'thumbnail' : {
       'format': 'image/jpeg',
@@ -33,8 +32,8 @@ var utils = window.utils || {};
     return;
   }
 
-  // Obtains the thumbnail configuration by looking  for the config file
-  // If no config file is found, then default values are taken
+  // Obtains the thumbnail configuration by looking  for the config file.
+  // If no config file is found, then default values are taken.
   function getThumbsConfig() {
     return new Promise(function(resolve, reject) {
       utils.config.load(CONFIG_FILE).then(function resolved(config) {

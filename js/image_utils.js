@@ -1,4 +1,4 @@
-/*
+/**
  * This shared module defines a single ImageUtils object in the global scope.
  *
  * ImageUtils.getSizeAndType() takes a Blob as its argument and
