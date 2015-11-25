@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "name": "Fxos Gmail Sync",
-  "description": "An app to sync your gmail contact to your fxos phone",
+  "name": "FxOS Gmail Sync",
+  "description": "An app to sync your gmail contacts to your FxOS phone",
   "launch_path": "/index.html",
   "icons": {
     "16": "/img/icons/icon16x16.png",
@@ -15,15 +15,15 @@
   },
   "type": "privileged",
   "permissions": {
-    "contacts":{ "access": "readwrite" },
-    "desktop-notification":{},
+    "contacts": { "access": "readwrite" },
+    "desktop-notification": {},
     "alarms": {},
     "systemXHR": {},
     "moz-extremely-unstable-and-will-change-webcomponents": {}
   },
-  "redirects": [
-    {"from": "https://phoxygen.eu/oauth_result",
-    "to": "/oauth_result.html"}
-  ]
+  "redirects": [{
+    "from": "https://phoxygen.eu/oauth_result",
+    "to": "/oauth_result.html"
+  }]
 
 }

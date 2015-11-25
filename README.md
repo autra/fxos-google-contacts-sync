@@ -1,2 +1,2 @@
 # fxos-google-contacts-sync
-A sync client for FxOS contact app
+A sync client for the FxOS Contacts app.
