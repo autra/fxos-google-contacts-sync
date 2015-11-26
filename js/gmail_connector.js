@@ -461,9 +461,10 @@ var GmailConnector = (function GmailConnector() {
       .then((result) => {
         var importer = this.getImporter(result.data, accessToken);
         return importer.start();
-      }).then(() => {
+      }).then((syncResults) => {
         // here we consider the import as success
         localStorage.setItem(LAST_IMPORT_DATE_KEY, now);
+        return syncResults;
       })
       // TODO proper error handling.
       .catch(e => {

@@ -101,7 +101,12 @@
       var allPromises = [];
       for (var hash of this.contacts) {
         // TODO proper reporting of success
-        allPromises.push(importContact(hash));
+        allPromises.push(importContact(hash).then((contact) => {
+          return {
+            action: 'created',
+            id: contact.id
+          };
+        }));
       }
       return Promise.all(allPromises);
     };
@@ -133,14 +138,14 @@
           localStorage.removeItem(serviceContact.uid);
           localStorage.removeItem('mozcontact#' + mozId);
           return {
-            action: 'delete',
+            action: 'deleted',
             id: mozId
           };
         });
       } else if (!mozId) {
         return importContact(hash).then((contact) => {
           return {
-            action: 'new',
+            action: 'created',
             id: contact.id
           };
         });
