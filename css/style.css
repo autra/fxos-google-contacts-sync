@@ -1,3 +1,8 @@
+h2 {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+}
+
 .content {
   position: absolute;
   width: 100%;
@@ -9,30 +14,30 @@
   padding: 0 1rem;
 }
 
-#spinner {
+#spinner,
+#message-container {
   height: 100%;
   width: 100%;
   position: absolute;
   top: 0;
   left: 100%;
   z-index: 2;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
   background-color: black;
 }
 
-#spinner.hidding {
-  transform: translateX(-100%);
-  animation: 0.2s ease fade-out;
-  opacity: 0;
+#message-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 0.9;
+  padding: 1rem 1rem 0;
+  color: white;
 }
 
-#spinner.visible {
-  transform: translateX(-100%);
-  animation: 0.2s ease fade-in;
-  opacity: 0.8;
+#spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #spinner.visible > div {
@@ -46,6 +51,23 @@
   color: white;
 }
 
+.hidding {
+  transform: translateX(-100%);
+  animation: 0.2s ease fade-out;
+  opacity: 0;
+}
+
+.showing {
+  transform: translateX(-100%);
+  animation: 0.2s ease fade-in;
+  opacity: 0.9;
+}
+
+.visible {
+  transform: translateX(-100%);
+  opacity: 0.9;
+}
+
 @keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -53,10 +75,10 @@
 
 @keyframes fade-in {
   from { opacity: 0; }
-  to { opacity: 0.8; }
+  to { opacity: 0.9; }
 }
 
 @keyframes fade-out {
-  from { opacity: 0.8; }
+  from { opacity: 0.9; }
   to { opacity: 0; }
 }

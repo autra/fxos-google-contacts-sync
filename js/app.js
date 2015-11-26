@@ -40,6 +40,9 @@ window.addEventListener('DOMContentLoaded', function() {
   var importButton = document.getElementById('import-contacts');
   importButton.onclick = startImport;
 
+  var spinner = document.getElementById('spinner');
+  var messageArea = document.getElementById('message-container');
+
   function enableImport() {
     var timeEnable;
     if (!accessToken || !tokenValidity) {
@@ -92,29 +95,78 @@ window.addEventListener('DOMContentLoaded', function() {
     enableImport();
   }
 
-  function showSpinner() {
-    document.getElementById('spinner').classList.add('visible');
+  function showElement(elm, doTransition) {
+    if (doTransition) {
+      elm.classList.add('showing');
+      setTimeout(() => {
+        elm.classList.remove('showing');
+        elm.classList.add('visible');
+      }, 200);
+    } else {
+      elm.classList.add('visible');
+    }
   }
 
-  function hideSpinner() {
-    var spinner = document.getElementById('spinner');
-    spinner.classList.remove('visible');
-    spinner.classList.add('hidding');
-    setTimeout(() => {
-      spinner.classList.remove('hidding');
-    }, 201);
+  function hideElement(elm, doTransition) {
+    elm.classList.remove('visible');
+    if (doTransition) {
+      elm.classList.add('hidding');
+      setTimeout(() => {
+        elm.classList.remove('hidding');
+      }, 200);
+    }
+  }
+
+  function showMessage(mess) {
+    messageArea.querySelector('.message').innerHTML = mess;
+    showElement(messageArea, false);
   }
 
   function startImport() {
     console.log('starting sync');
-    showSpinner();
+    showElement(spinner, true);
     GmailConnector.startSync(accessToken)
-    .then((result) => console.log('Sync successfully finished!', result))
+    .then((result) => {
+      console.log('Sync successfully finished!', result);
+      var nbDeleted = 0;
+      var nbUpdated = 0;
+      var nbAdded = 0;
+      for (var op of result) {
+        switch (op.action) {
+          case 'created':
+            nbAdded++;
+            break;
+          case 'updated':
+            nbUpdated++;
+            break;
+          case 'deleted':
+            nbDeleted++;
+            break;
+        }
+      }
+      var message =
+      showMessage(
+        '<h2>Sync successfully finished:</h2>'+
+        'Summary:<br>' +
+        `<ul>
+          <li>${nbAdded} contact(s) added</li>
+          <li>${nbUpdated} contact(s) updated</li>
+          <li>${nbDeleted} contact(s) deleted</li>
+        </ul>`
+      );
+
+    })
     .catch((e) => console.error(e))
-    .then(hideSpinner);
+    .then( () => hideElement(spinner, false));
   }
 
+  // listener for oauth redirect
   window.addEventListener('message', tokenDataReady);
+
+  // listener for ok button in message area
+  messageArea.querySelector('.ok').addEventListener('click', (e) => {
+    hideElement(messageArea, true);
+  });
 
   loadPersistedState();
 
