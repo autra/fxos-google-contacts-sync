@@ -22,6 +22,7 @@
     <!--gaia components-->
     <script src="bower_components/gaia-component/gaia-component.js"></script>
     <script src="bower_components/font-fit/font-fit.js"></script>
+    <script src="bower_components/gaia-icons/gaia-icons.js"></script>
     <script src="bower_components/gaia-header/gaia-header.js"></script>
     <script src="bower_components/gaia-button/gaia-button.js"></script>
 
@@ -51,17 +52,21 @@
     <script type="text/javascript" src="js/libs/l10n.js" defer></script>
   </head>
   <body class="theme-communications">
-    <gaia-header title-start="3rem">
-      <h1 data-l10n-id="app_title" class="main-title">FxOS gmail sync</h1>
-    </gaia-header>
     <section class="content">
-      <!--Add a button for the user to click to initiate auth sequence -->
-      <gaia-button id="authorize-button">
-        <div data-l10n-id="authorize">Authorize</div>
-      </gaia-button>
-      <gaia-button id="import-contacts">
-        <div data-l10n-id="import_contacts">Import Contacts</div>
-      </gaia-button>
+      <gaia-header title-start="3rem">
+        <h1 data-l10n-id="app_title" class="main-title">FxOS gmail sync</h1>
+      </gaia-header>
+      <div class="innerContent">
+        <gaia-button id="authorize-button">
+          <div data-l10n-id="authorize">Authorize</div>
+        </gaia-button>
+        <gaia-button id="import-contacts">
+          <div data-l10n-id="import_contacts">Import Contacts</div>
+        </gaia-button>
+      </div>
+    </section>
+    <section id="spinner">
+      <div data-icon="sync" aria-hidden="true"/>
     </section>
   </body>
 </html>

@@ -92,11 +92,26 @@ window.addEventListener('DOMContentLoaded', function() {
     enableImport();
   }
 
+  function showSpinner() {
+    document.getElementById('spinner').classList.add('visible');
+  }
+
+  function hideSpinner() {
+    var spinner = document.getElementById('spinner');
+    spinner.classList.remove('visible');
+    spinner.classList.add('hidding');
+    setTimeout(() => {
+      spinner.classList.remove('hidding');
+    }, 201);
+  }
+
   function startImport() {
     console.log('starting sync');
+    showSpinner();
     GmailConnector.startSync(accessToken)
     .then((result) => console.log('Sync successfully finished!', result))
-    .catch((e) => console.error(e));
+    .catch((e) => console.error(e))
+    .then(hideSpinner);
   }
 
   window.addEventListener('message', tokenDataReady);
