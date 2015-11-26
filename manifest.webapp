@@ -24,6 +24,6 @@
   "redirects": [{
     "from": "https://phoxygen.eu/oauth_result",
     "to": "/oauth_result.html"
-  }]
-
+  }],
+  "orientation": "default"
 }
